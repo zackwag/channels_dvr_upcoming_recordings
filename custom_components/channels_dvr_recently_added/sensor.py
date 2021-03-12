@@ -1,6 +1,6 @@
 """
 Home Assistant component to feed the Upcoming Media Lovelace card with
-Channels DVR recently added media.
+Channels DVR recently recorded shows.
 
 https://github.com/custom-cards/upcoming-media-card
 
@@ -59,7 +59,7 @@ async def request(url):
 
 
 CONF_DL_IMAGES = "download_images"
-DEFAULT_NAME = "Recently Added"
+DEFAULT_NAME = "Recently Recorded"
 CONF_MAX = "max"
 CONF_IMG_CACHE = "img_dir"
 
@@ -77,10 +77,10 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
     name = config.get(CONF_NAME)
-    add_devices([ChannelsDVRRecentlyAddedSensor(hass, config, name)], True)
+    add_devices([ChannelsDVRRecentlyRecordedSensor(hass, config, name)], True)
 
 
-class ChannelsDVRRecentlyAddedSensor(Entity):
+class ChannelsDVRRecentlyRecordedSensor(Entity):
     def __init__(self, hass, conf, name):
         self._name = name
         self.conf_dir = str(hass.config.path()) + "/"

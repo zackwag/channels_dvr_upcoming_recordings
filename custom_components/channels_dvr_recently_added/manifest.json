@@ -1,6 +1,6 @@
 {
-  "domain": "channels_dvr_recently_added",
-  "name": "Channels DVR Recently Added",
+  "domain": "channels_dvr_recently_recorded",
+  "name": "Channels DVR Recently Recorded",
   "version": "0.0.1",
   "documentation": "",
   "dependencies": [],
