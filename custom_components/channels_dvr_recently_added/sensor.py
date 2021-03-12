@@ -22,7 +22,6 @@ from urllib.parse import urlparse
 SCAN_INTERVAL = timedelta(minutes=3)
 _LOGGER = logging.getLogger(__name__)
 
-
 FILES_ENDPOINT = "/dvr/files?all=true"
 
 AIRDATE = "airdate"
@@ -60,8 +59,7 @@ async def request(url):
 
 
 CONF_DL_IMAGES = "download_images"
-DEFAULT_NAME = "Channels DVR Recently Added"
-CONF_SERVER = "server_name"
+DEFAULT_NAME = "Recently Added"
 CONF_MAX = "max"
 CONF_IMG_CACHE = "img_dir"
 
@@ -69,7 +67,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
         vol.Optional(CONF_MAX, default=5): cv.string,
-        vol.Optional(CONF_SERVER): cv.string,
         vol.Optional(CONF_DL_IMAGES, default=True): cv.boolean,
         vol.Optional(CONF_HOST, default="localhost"): cv.string,
         vol.Optional(CONF_PORT, default="8089"): cv.positive_int,
@@ -90,7 +87,6 @@ class ChannelsDVRRecentlyAddedSensor(Entity):
         self._dir = conf.get(CONF_IMG_CACHE)
         if self._name:
             self._dir = self._dir + self._name.replace(" ", "_") + "/"
-        self.server_name = conf.get(CONF_SERVER)
         self.max_items = int(conf.get(CONF_MAX))
         self.dl_images = conf.get(CONF_DL_IMAGES)
         self.server_ip = conf.get(CONF_HOST)
@@ -119,6 +115,7 @@ class ChannelsDVRRecentlyAddedSensor(Entity):
         url = f"http://{self.server_ip}:{self.port}{FILES_ENDPOINT}"
         _LOGGER.debug(f"{url=}")
 
+        """Retrieve recorded show info"""
         try:
             resp = await request(url)
             json_string = resp.decode("utf-8")
@@ -132,6 +129,7 @@ class ChannelsDVRRecentlyAddedSensor(Entity):
             return
         self._state = "Online"
 
+        """Only look for recorded programs"""
         self.data = [x for x in files if x["JobID"] != ""]
         self.data.sort(
             reverse=True, key=lambda x: parse(x["Airing"]["Raw"]["startTime"])
@@ -177,10 +175,8 @@ class ChannelsDVRRecentlyAddedSensor(Entity):
                 FLAG: not recording["Watched"],
                 TITLE: episode["Title"],
                 EPISODE: episode["EpisodeTitle"],
-                NUMBER: "S"
-                + "%02d" % episode["SeasonNumber"]
-                + "E"
-                + "%02d" % episode["EpisodeNumber"],
+                NUMBER: "S%02d" % episode["SeasonNumber"]
+                + "E%02d" % episode["EpisodeNumber"],
                 RUNTIME: episode["Raw"]["duration"],
                 GENRES: episode["Genres"],
                 RATING: episode["Raw"]["ratings"][0]["code"],
