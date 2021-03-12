@@ -1,21 +1,17 @@
 """
 Home Assistant component to feed the Upcoming Media Lovelace card with
-Plex recently added media.
-
-https://github.com/custom-components/sensor.plex_recently_added
+Channels DVR recently added media.
 
 https://github.com/custom-cards/upcoming-media-card
 
 """
-import os.path
 import logging
 import json
 import aiohttp
-import asyncio
 import async_timeout
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
-from datetime import datetime, timedelta
+from datetime import timedelta
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_NAME
 from homeassistant.helpers.entity import Entity
@@ -47,12 +43,6 @@ LINE2_DEFAULT = "line2_default"
 LINE3_DEFAULT = "line3_default"
 LINE4_DEFAULT = "line4_default"
 ICON = "icon"
-# - title_default: $title
-#   line1_default: $episode
-#   line2_default: $release
-#   line3_default: $number - $rating - $runtime
-#   line4_default: $genres
-#   icon: 'mdi:eye-off'
 
 
 async def fetch(session, url):
@@ -74,7 +64,6 @@ DEFAULT_NAME = "Channels DVR Recently Added"
 CONF_SERVER = "server_name"
 CONF_MAX = "max"
 CONF_IMG_CACHE = "img_dir"
-CONF_EXCLUDE_KEYWORDS = "exclude_keywords"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -84,14 +73,12 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_DL_IMAGES, default=True): cv.boolean,
         vol.Optional(CONF_HOST, default="localhost"): cv.string,
         vol.Optional(CONF_PORT, default="8089"): cv.positive_int,
-        vol.Optional(CONF_EXCLUDE_KEYWORDS): vol.All(cv.ensure_list, [cv.string]),
         vol.Optional(CONF_IMG_CACHE, default="/upcoming-media-card-images/"): cv.string,
     }
 )
 
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
-    _LOGGER.debug(f"{discovery_info=}")
     name = config.get(CONF_NAME)
     add_devices([ChannelsDVRRecentlyAddedSensor(hass, config, name)], True)
 
@@ -106,20 +93,8 @@ class ChannelsDVRRecentlyAddedSensor(Entity):
         self.server_name = conf.get(CONF_SERVER)
         self.max_items = int(conf.get(CONF_MAX))
         self.dl_images = conf.get(CONF_DL_IMAGES)
-        self.excludes = conf.get(CONF_EXCLUDE_KEYWORDS)
-        if self.server_name:
-            _LOGGER.warning(
-                "Plex Recently Added: The server_name option has been removed. Use host and port options instead."
-            )
-            return
-        else:
-            self.server_ip = conf.get(CONF_HOST)
-            self.port = conf.get(CONF_PORT)
-        self.url_elements = [
-            self.server_ip,
-            self.port,
-            self.dl_images,
-        ]
+        self.server_ip = conf.get(CONF_HOST)
+        self.port = conf.get(CONF_PORT)
         self._state = None
         self.data = []
 
@@ -133,10 +108,8 @@ class ChannelsDVRRecentlyAddedSensor(Entity):
 
     @property
     def device_state_attributes(self):
-
         if not len(self._attrs):
             return
-
         return {"data": self._attrs}
 
     async def async_update(self):
@@ -187,8 +160,14 @@ class ChannelsDVRRecentlyAddedSensor(Entity):
 
         self._attrs.append(attr)
 
+        num_items = 0
+
         for recording in self.data:
             episode = recording["Airing"]
+
+            num_items += 1
+            if num_items > self.max_items:
+                break
 
             attr = {
                 AIRDATE: parse(episode["Raw"]["startTime"]).strftime(
@@ -213,16 +192,12 @@ class ChannelsDVRRecentlyAddedSensor(Entity):
             if not self.dl_images:
                 attr[POSTER] = image_uri
             else:
-                _LOGGER.debug(f"{dir_images=}")
-
                 """Update if media items have changed or images are missing"""
                 filename = urlparse(image_uri).path.rsplit("/", 1)[-1]
-                _LOGGER.debug(f"Checking {image_uri=} {filename=}")
                 if filename not in dir_images:
                     poster_image = await request(image_uri)
                     if poster_image is not None:
                         image_file = directory + filename
-                        _LOGGER.debug(f"Writing {image_file=}")
                         open(image_file, "wb").write(poster_image)
                 elif filename in remove_images:
                     remove_images.remove(filename)
