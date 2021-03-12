@@ -1,9 +1,9 @@
 {
-    "domain": "plex_recently_added",
-    "name": "Plex Recently Added",
-    "version": "0.3.7",
-    "documentation": "https://github.com/custom-components/sensor.plex_recently_added",
-    "dependencies": [],
-    "codeowners": ["@maykar"],
-    "requirements": []
-  }
+  "domain": "channels_dvr_recently_added",
+  "name": "Channels DVR Recently Added",
+  "version": "0.0.1",
+  "documentation": "",
+  "dependencies": [],
+  "codeowners": ["@rccoleman"],
+  "requirements": ["python-dateutil"]
+}
