@@ -21,15 +21,14 @@ Read through these two resources before posting issues to GitHub or the forums.
 
 ### Options
 
-| key             | default                             | required | description                                                                                                                                    |
-| --------------- | ----------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| name            | Channels_DVR_Recently_Recorded      | no       | Name of the sensor. Useful to make multiple sensors with different libraries.                                                                  |
-| token           |                                     | yes      | Your Plex token [(Find your Plex token)](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/)             |
-| host            | localhost                           | yes      | The host Plex is running on.                                                                                                                   |
-| port            | 8089                                | yes      | The port Plex is running on.                                                                                                                   |
-| max             | 5                                   | no       | Max number of items to show in sensor.                                                                                                         |
-| download_images | true                                | no       | Setting this to false will turn off downloading of images, but will require certain Plex settings to work. See below.                          |
-| img_dir         | '/upcoming-media-card-images/plex/' | no       | This option allows you to choose a custom directory to store images in if you enable download_images. Directory must start and end with a `/`. |
+| key             | default                                          | required | description                                                                                                                                    |
+| --------------- | ------------------------------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| name            | Recently_Recorded                                | no       | Name of the sensor. Useful to make multiple sensors with different libraries.                                                                  |
+| host            | localhost                                        | yes      | The host Channels DVR is running on.                                                                                                           |
+| port            | 8089                                             | yes      | The port Channels DVR is running on.                                                                                                           |
+| max             | 5                                                | no       | Max number of items to show in sensor.                                                                                                         |
+| download_images | true                                             | no       | Setting this to false will turn off downloading of images.                                                                                     |
+| img_dir         | '/upcoming-media-card-images/recently_recorded/' | no       | This option allows you to choose a custom directory to store images in if you enable download_images. Directory must start and end with a `/`. |
 
 #### By default this addon automatically downloads images from the Channels site to your /www/custom-lovelace/upcoming-media-card/ directory. The directory is automatically created & only images reported in the upcoming list are downloaded. Images are small in size and are removed automatically when no longer needed.
 
