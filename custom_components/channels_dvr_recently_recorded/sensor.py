@@ -8,8 +8,6 @@ https://github.com/custom-cards/upcoming-media-card
 from custom_components.channels_dvr_recently_recorded import DOMAIN, VERSION, request
 import logging
 import json
-import aiohttp
-import async_timeout
 from homeassistant.core import callback
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_NAME
 from homeassistant.helpers.entity import Entity
@@ -21,11 +19,13 @@ from datetime import timedelta
 SCAN_INTERVAL = timedelta(seconds=30)
 _LOGGER = logging.getLogger(__name__)
 
-
 FILES_ENDPOINT = "/dvr/files?all=true"
 DEFAULT_PORT = 8089
 
+CONF_DL_IMAGES = "dl_images"
 CONF_HOSTNAME = "hostname"
+CONF_IMG_DIR = "img_dir"
+CONF_MAX = "max"
 CONF_VERIFICATION = "verification"
 
 AIRDATE = "airdate"
@@ -47,10 +47,7 @@ LINE3_DEFAULT = "line3_default"
 LINE4_DEFAULT = "line4_default"
 ICON = "icon"
 
-CONF_DL_IMAGES = "dl_images"
 DEFAULT_NAME = "Recently Recorded"
-CONF_MAX = "max"
-CONF_IMG_DIR = "img_dir"
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):

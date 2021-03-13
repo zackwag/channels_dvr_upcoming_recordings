@@ -6,7 +6,6 @@ from homeassistant.const import CONF_HOST, CONF_PORT
 import json
 import logging
 from homeassistant.config_entries import ConfigEntry
-
 from homeassistant.core import HomeAssistant
 
 
@@ -39,6 +38,8 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
 async def async_setup_entry(hass, config_entry):
     """Set up config entry."""
+
+    """Get the version number of the server"""
     status_uri = f"http://{config_entry.data[CONF_HOST]}:{config_entry.data[CONF_PORT]}{STATUS_ENDPOINT}"
     try:
         resp = await request(status_uri)

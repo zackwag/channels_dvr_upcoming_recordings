@@ -57,7 +57,6 @@ async def validate_input(data):
         _LOGGER.exception("Unexpected exception")
         raise CannotConnect
 
-    _LOGGER.debug(f"Received {auth.get(CONF_VERIFICATION, 'None')=}")
     return {CONF_VERIFICATION: auth.get(CONF_VERIFICATION, "None")}
 
 
@@ -95,8 +94,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, discovery_info: Optional[Dict[str, Any]] = None
     ):
         """Handle the initial step."""
-        # 2021-03-13 10:23:14 DEBUG (MainThread) [custom_components.channels_dvr_recently_recorded.config_flow] Discovered {'host': '192.168.1.211', 'port': 8089, 'hostname': 'dvr-syn-nas2.local.', 'type': '_channels_dvr._tcp.local.', 'name': 'syn-nas2._channels_dvr._tcp.local.', 'properties': {'_raw': {'os': b'linux', 'arch': b'x86_64', 'version': b'2021.02.04.1931'}, 'os': 'linux', 'arch': 'x86_64', 'version': '2021.02.04.1931'}}
-        # 2021-03-13 10:23:14 DEBUG (MainThread) [custom_components.channels_dvr_recently_recorded.config_flow] Host=192.168.1.211, Port=8089
 
         """Handle a flow initialized by zeroconf discovery."""
         _LOGGER.debug(f"Discovered {discovery_info}")
