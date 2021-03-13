@@ -168,19 +168,21 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
                 break
 
             attr = {
-                AIRDATE: parse(episode["Raw"]["startTime"]).strftime(
-                    "%Y-%m-%dT%H:%M:%SZ"
-                ),
-                AIRED: episode["OriginalDate"],
-                FLAG: not recording["Watched"],
-                TITLE: episode["Title"],
-                EPISODE: episode["EpisodeTitle"],
-                NUMBER: "S%02d" % episode["SeasonNumber"]
-                + "E%02d" % episode["EpisodeNumber"],
-                RUNTIME: episode["Raw"]["duration"],
-                GENRES: episode["Genres"],
-                RATING: episode["Raw"]["ratings"][0]["code"],
-                RELEASE: "$day, $date $time",
+                AIRDATE: ""
+                if not episode["Raw"].get("startTime", None)
+                else parse(episode["Raw"]["startTime"]).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                AIRED: episode.get("OriginalDate", ""),
+                FLAG: recording.get("Watched", ""),
+                TITLE: episode.get("Title", ""),
+                EPISODE: episode.get("EpisodeTitle", ""),
+                NUMBER: "S%02d" % episode.get("SeasonNumber", 0)
+                + "E%02d" % episode.get("EpisodeNumber", 0),
+                RUNTIME: episode["Raw"].get("duration", 0),
+                GENRES: episode.get("Genres", ""),
+                RATING: ""
+                if not episode["Raw"]["ratings"]
+                else episode["Raw"]["ratings"][0]["code"],
+                POSTER: episode["Raw"]["program"]["preferredImage"].get("uri", ""),
             }
 
             image_uri = episode["Raw"]["program"]["preferredImage"]["uri"]
