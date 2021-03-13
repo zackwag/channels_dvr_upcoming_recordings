@@ -25,7 +25,7 @@ This integration can only be configuration through the UI (Configuration->Integr
 
 | key             | default                                          | required | description                                                                                                                                    |
 | --------------- | ------------------------------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| name            | Recently_Recorded                                | no       | Name of the sensor. Useful to make multiple sensors with different libraries.                                                                  |
+| name            | Recently_Recorded                                | no       | Name of the sensor.                                                                 |
 | host            | localhost                                        | yes      | The host Channels DVR is running on.                                                                                                           |
 | port            | 8089                                             | yes      | The port Channels DVR is running on.                                                                                                           |
 | max             | 5                                                | no       | Max number of items to show in sensor.                                                                                                         |
