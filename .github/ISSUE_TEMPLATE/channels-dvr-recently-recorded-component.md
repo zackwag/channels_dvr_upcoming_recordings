@@ -1,10 +1,9 @@
 ---
-name: Plex Recently Added Component
+name: Channels DVR Recently Recorded Component
 about: Issues with the component
-title: ''
-labels: ''
-assignees: ''
-
+title: ""
+labels: ""
+assignees: ""
 ---
 
 **Describe the Bug**
@@ -18,12 +17,6 @@ Well, did you?
 
 **What data does the sensor display if any?**
 Feel free to censor information pertaining to titles, networks, etc.
-
-**What displays when visiting the API URL from the troubleshooting guide?**
-Feel free to censor information pertaining to titles, networks, etc.
-
-**Does the default Home Assistant Plex component work for you?**
-This is important to know, helps rule out issues with your Plex installation.
 
 **Home Assistant Version**
 What version of HA are you running?
