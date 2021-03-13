@@ -1,2 +1,4 @@
 venv
 custom_components/copy
+custom_components/.DS_Store
+custom_components/channels_dvr_recently_recorded/.DS_Store

@@ -1,4 +1,4 @@
 {
   "name": "Channels DVR Recently Recorded",
-  "iot_class": "Cloud Polling"
+  "iot_class": "Local Polling"
 }

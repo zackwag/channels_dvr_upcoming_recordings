@@ -5,24 +5,28 @@ Channels DVR recently recorded shows.
 https://github.com/custom-cards/upcoming-media-card
 
 """
+from custom_components.channels_dvr_recently_recorded import DOMAIN, VERSION, request
 import logging
 import json
 import aiohttp
 import async_timeout
-import voluptuous as vol
-import homeassistant.helpers.config_validation as cv
-from datetime import timedelta
-from homeassistant.components.sensor import PLATFORM_SCHEMA
+from homeassistant.core import callback
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_NAME
 from homeassistant.helpers.entity import Entity
 from dateutil.parser import parse
 from urllib.parse import urlparse
+from datetime import timedelta
 
 
-SCAN_INTERVAL = timedelta(minutes=3)
+SCAN_INTERVAL = timedelta(seconds=30)
 _LOGGER = logging.getLogger(__name__)
 
+
 FILES_ENDPOINT = "/dvr/files?all=true"
+DEFAULT_PORT = 8089
+
+CONF_HOSTNAME = "hostname"
+CONF_VERIFICATION = "verification"
 
 AIRDATE = "airdate"
 AIRED = "aired"
@@ -43,56 +47,34 @@ LINE3_DEFAULT = "line3_default"
 LINE4_DEFAULT = "line4_default"
 ICON = "icon"
 
-
-async def fetch(session, url):
-    try:
-        with async_timeout.timeout(8):
-            async with session.get(url) as response:
-                return await response.content.read()
-    except:
-        pass
-
-
-async def request(url):
-    async with aiohttp.ClientSession() as session:
-        return await fetch(session, url)
-
-
-CONF_DL_IMAGES = "download_images"
+CONF_DL_IMAGES = "dl_images"
 DEFAULT_NAME = "Recently Recorded"
 CONF_MAX = "max"
-CONF_IMG_CACHE = "img_dir"
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {
-        vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
-        vol.Optional(CONF_MAX, default=5): cv.string,
-        vol.Optional(CONF_DL_IMAGES, default=True): cv.boolean,
-        vol.Optional(CONF_HOST, default="localhost"): cv.string,
-        vol.Optional(CONF_PORT, default="8089"): cv.positive_int,
-        vol.Optional(CONF_IMG_CACHE, default="/upcoming-media-card-images/"): cv.string,
-    }
-)
+CONF_IMG_DIR = "img_dir"
 
 
-def setup_platform(hass, config, add_devices, discovery_info=None):
-    name = config.get(CONF_NAME)
-    add_devices([ChannelsDVRRecentlyRecordedSensor(hass, config, name)], True)
+async def async_setup_entry(hass, config_entry, async_add_entities):
+    """Set up sensor entity."""
+    async_add_entities([ChannelsDVRRecentlyRecordedSensor(hass, config_entry)])
 
 
 class ChannelsDVRRecentlyRecordedSensor(Entity):
-    def __init__(self, hass, conf, name):
-        self._name = name
+    def __init__(self, hass, conf):
+        self._name = conf.data.get(CONF_NAME)
         self.conf_dir = str(hass.config.path()) + "/"
-        self._dir = conf.get(CONF_IMG_CACHE)
+        self._dir = conf.data.get(CONF_IMG_DIR)
         if self._name:
             self._dir = self._dir + self._name.replace(" ", "_") + "/"
-        self.max_items = int(conf.get(CONF_MAX))
-        self.dl_images = conf.get(CONF_DL_IMAGES)
-        self.server_ip = conf.get(CONF_HOST)
-        self.port = conf.get(CONF_PORT)
+        self.max_items = int(conf.data.get(CONF_MAX))
+        self.dl_images = conf.data.get(CONF_DL_IMAGES)
+        self.server_ip = conf.data.get(CONF_HOST)
+        self.port = conf.data.get(CONF_PORT)
+        self.hostname = conf.data.get(CONF_HOSTNAME)
+        self.verification = conf.data.get(CONF_VERIFICATION)
         self._state = None
-        self.data = []
+        self._attrs = []
+        self.version = hass.data[DOMAIN][conf.entry_id][VERSION]
+        _LOGGER.debug(f"{self.version}")
 
     @property
     def name(self):
@@ -103,35 +85,60 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
         return self._state
 
     @property
-    def device_state_attributes(self):
+    def state_attributes(self):
         if not len(self._attrs):
             return
         return {"data": self._attrs}
+
+    @property
+    def unique_id(self):
+        """Return unique ID."""
+        return self.verification
+
+    @property
+    def device_info(self):
+        _LOGGER.debug(f"Version: {self.version}")
+        """Device info."""
+        return {
+            "identifiers": {(DOMAIN, self.verification)},
+            "name": "Channels DVR Recordings",
+            "manufacturer": "Channels",
+            "model": "DVR Server",
+            "default_name": "Channels DVR Recordings",
+            "entry_type": "service",
+            "sw_version": self.version,
+        }
+
+    @callback
+    async def async_added_to_hass(self):
+        self.async_schedule_update_ha_state(force_refresh=True)
 
     async def async_update(self):
         import os
         import re
 
-        url = f"http://{self.server_ip}:{self.port}{FILES_ENDPOINT}"
+        files_uri = f"http://{self.server_ip}:{self.port}{FILES_ENDPOINT}"
         _LOGGER.debug(f"Updating")
 
-        """Retrieve recorded show info"""
+        """Retrieve recorded show info and server version"""
         try:
-            resp = await request(url)
+            resp = await request(files_uri)
             json_string = resp.decode("utf-8")
             files = json.loads(json_string)
             if not files:
                 self._state = "%s cannot be reached" % self.server_ip
                 return
+
         except OSError:
             _LOGGER.warning("Host %s is not available", self.server_ip)
             self._state = "%s cannot be reached" % self.server_ip
             return
+
         self._state = "Online"
 
         """Only look for recorded programs"""
-        self.data = [x for x in files if x["JobID"] != "" and x["Deleted"] == False]
-        self.data.sort(
+        recordings = [x for x in files if x["JobID"] != "" and x["Deleted"] == False]
+        recordings.sort(
             reverse=True, key=lambda x: parse(x["Airing"]["Raw"]["startTime"])
         )
 
@@ -153,14 +160,14 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
             LINE2_DEFAULT: "$release",
             LINE3_DEFAULT: "$number - $rating - $runtime",
             LINE4_DEFAULT: "$genres",
-            ICON: "mdi:eye-off",
+            ICON: "mdi:eye",
         }
 
         self._attrs.append(attr)
 
         num_items = 0
 
-        for recording in self.data:
+        for recording in recordings:
             episode = recording["Airing"]
 
             num_items += 1
@@ -172,7 +179,7 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
                 if not episode["Raw"].get("startTime", None)
                 else parse(episode["Raw"]["startTime"]).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 AIRED: episode.get("OriginalDate", ""),
-                FLAG: recording.get("Watched", ""),
+                FLAG: recording.get("Watched", False),
                 TITLE: episode.get("Title", ""),
                 EPISODE: episode.get("EpisodeTitle", ""),
                 NUMBER: "S%02d" % episode.get("SeasonNumber", 0)
