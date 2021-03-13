@@ -14,18 +14,20 @@ Read through these two resources before posting issues to GitHub or the forums.
 ## Installation:
 
 1. Install this component by copying [these files](https://github.com/rccoleman/channels_dvr_recently_recorded) to `custom_components/channels_dvr_recently_recorded/`.
-2. Install the card: [Upcoming Media Card](https://github.com/custom-cards/upcoming-media-card)
-3. Add the code to your `configuration.yaml` using the config options below.
-4. Add the code for the card to your `ui-lovelace.yaml`.
-5. **You will need to restart after installation for the component to start working.**
+2. Restart Home Assistant
+3. If your Channels DVR installation is discovered via Zeroconf, you will get a notification and will be able to configure the integration without the need to specify the host and port.  Otherwise, add the integration from Configuration->Integrations->Add Integration.  Search for "Channels".
+4. Install the card: [Upcoming Media Card](https://github.com/custom-cards/upcoming-media-card)
+5. Add the code for the card to your `ui-lovelace.yaml`.
 
 ### Options
 
+This integration can only be configuration through the UI (Configuration->Integrations), and the options below can be configured when the integration is added (`host` and `port` aren't needed for a Zeroconf configuration).
+
 | key             | default                                          | required | description                                                                                                                                    |
 | --------------- | ------------------------------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| name            | Recently_Recorded                                | no       | Name of the sensor. Useful to make multiple sensors with different libraries.                                                                  |
-| host            | localhost                                        | yes      | The host Channels DVR is running on.                                                                                                           |
-| port            | 8089                                             | yes      | The port Channels DVR is running on.                                                                                                           |
+| name            | Recently_Recorded                                | no       | Name of the sensor.                                                                 |
+| host            | localhost                                        | yes      | The host Channels DVR is running on (not required if the installation is automatically discovered).                                  |
+| port            | 8089                                             | yes      | The port Channels DVR is running on (not required if the installation is automatically discovered).                                  |
 | max             | 5                                                | no       | Max number of items to show in sensor.                                                                                                         |
 | download_images | true                                             | no       | Setting this to false will turn off downloading of images.                                                                                     |
 | img_dir         | '/upcoming-media-card-images/recently_recorded/' | no       | This option allows you to choose a custom directory to store images in if you enable download_images. Directory must start and end with a `/`. |
@@ -35,20 +37,11 @@ Read through these two resources before posting issues to GitHub or the forums.
 </br></br>
 **Do not just copy examples, please use config options above to build your own!**
 
-### Sample for minimal config needed in configuration.yaml:
-
-```yaml
-sensor:
-  - platform: channels_dvr_recently_recorded
-    host: 192.168.1.42
-    port: 8089
-```
-
 ### Sample for ui-lovelace.yaml:
 
 ```yaml
 - type: custom:upcoming-media-card
-  entity: sensor.channels_dvr_recently_recorded
+  entity: sensor.recently_recorded
   title: Recently Recorded
 ```
 
