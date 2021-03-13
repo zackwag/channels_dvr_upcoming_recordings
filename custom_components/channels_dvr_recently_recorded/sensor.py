@@ -113,7 +113,7 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
         import re
 
         url = f"http://{self.server_ip}:{self.port}{FILES_ENDPOINT}"
-        _LOGGER.debug(f"{url=}")
+        _LOGGER.debug(f"Updating")
 
         """Retrieve recorded show info"""
         try:
@@ -130,7 +130,7 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
         self._state = "Online"
 
         """Only look for recorded programs"""
-        self.data = [x for x in files if x["JobID"] != ""]
+        self.data = [x for x in files if x["JobID"] != "" and x["Deleted"] == False]
         self.data.sort(
             reverse=True, key=lambda x: parse(x["Airing"]["Raw"]["startTime"])
         )
@@ -205,3 +205,5 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
             """Remove items no longer in the list"""
             _LOGGER.debug(f"Removing {remove_images}")
             [os.remove(directory + x) for x in remove_images]
+
+        _LOGGER.debug(f"Finished updating")
