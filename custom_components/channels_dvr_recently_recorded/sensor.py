@@ -5,6 +5,7 @@ Channels DVR recently recorded shows.
 https://github.com/custom-cards/upcoming-media-card
 
 """
+from json.decoder import JSONDecodeError
 from custom_components.channels_dvr_recently_recorded import DOMAIN, VERSION, request
 import logging
 import json
@@ -129,6 +130,11 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
         except OSError:
             _LOGGER.warning("Host %s is not available", self.server_ip)
             self._state = "%s cannot be reached" % self.server_ip
+            return
+
+        except JSONDecodeError:
+            _LOGGER.warning("Couldn't decode data returned from %s", self.server_ip)
+            self._state = "Couldn't decode data returned from %s" % self.server_ip
             return
 
         self._state = "Online"
