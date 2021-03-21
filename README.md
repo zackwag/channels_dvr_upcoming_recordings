@@ -13,11 +13,24 @@ Read through these two resources before posting issues to GitHub or the forums.
 
 ## Installation:
 
+### HACS
+
+1. Launch HACS
+2. Navigate to the Integrations section
+3. "+ Explore & Add Repositories" button in the bottom right
+4. Search for "Channels DVR"
+5. Select "Install this repository"
+6. Restart Home Assistant
+
+### Manual
+
 1. Install this component by copying [these files](https://github.com/rccoleman/channels_dvr_recently_recorded) to `custom_components/channels_dvr_recently_recorded/`.
 2. Restart Home Assistant
-3. If your Channels DVR installation is discovered via Zeroconf, you will get a notification and will be able to configure the integration without the need to specify the host and port.  Otherwise, add the integration from Configuration->Integrations->Add Integration.  Search for "Channels".
-4. Install the card: [Upcoming Media Card](https://github.com/custom-cards/upcoming-media-card)
-5. Add the code for the card to your `ui-lovelace.yaml`.
+
+### Configuration
+1. If your Channels DVR installation is discovered via Zeroconf, you will get a notification and will be able to configure the integration without the need to specify the host and port.  Otherwise, add the integration from Configuration->Integrations->Add Integration.  Search for "Channels".
+2. Install the card: [Upcoming Media Card](https://github.com/custom-cards/upcoming-media-card)
+3. Add the code for the Upcoming Media card to your `ui-lovelace.yaml` or by adding a manual card via the UI.  Please see the documentation for the Upcoming Media Card for more.
 
 ### Options
 
