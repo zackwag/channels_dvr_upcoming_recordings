@@ -5,12 +5,11 @@ Channels DVR recently recorded shows.
 https://github.com/custom-cards/upcoming-media-card
 
 """
-from json.decoder import JSONDecodeError
-from custom_components.channels_dvr_recently_recorded import DOMAIN, VERSION, request
+from custom_components.channels_dvr_recently_recorded.api import ConnectionFail
+from custom_components.channels_dvr_recently_recorded import DOMAIN
 import logging
-import json
 from homeassistant.core import callback
-from homeassistant.const import CONF_HOST, CONF_PORT, CONF_NAME
+from homeassistant.const import CONF_NAME
 from homeassistant.helpers.entity import Entity
 from dateutil.parser import parse
 from urllib.parse import urlparse
@@ -19,9 +18,6 @@ from datetime import timedelta
 
 SCAN_INTERVAL = timedelta(seconds=30)
 _LOGGER = logging.getLogger(__name__)
-
-FILES_ENDPOINT = "/dvr/files?all=true"
-DEFAULT_PORT = 8089
 
 CONF_DL_IMAGES = "dl_images"
 CONF_HOSTNAME = "hostname"
@@ -65,25 +61,26 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
             self._dir = self._dir + self._name.replace(" ", "_") + "/"
         self.max_items = int(conf.data.get(CONF_MAX))
         self.dl_images = conf.data.get(CONF_DL_IMAGES)
-        self.server_ip = conf.data.get(CONF_HOST)
-        self.port = conf.data.get(CONF_PORT)
-        self.hostname = conf.data.get(CONF_HOSTNAME)
         self.verification = conf.data.get(CONF_VERIFICATION)
         self._state = None
         self._attrs = []
-        self.version = hass.data[DOMAIN][conf.entry_id][VERSION]
+        self._channels_dvr = hass.data[DOMAIN][conf.entry_id]
+        self.version = self._channels_dvr.version
         _LOGGER.debug(f"{self.version}")
 
     @property
     def name(self):
+        """Return the name of the entity"""
         return self._name
 
     @property
     def state(self):
+        """Return the state of the entity."""
         return self._state
 
     @property
     def state_attributes(self):
+        """Return the attribute dict."""
         if not len(self._attrs):
             return
         return {"data": self._attrs}
@@ -95,8 +92,8 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
 
     @property
     def device_info(self):
-        _LOGGER.debug(f"Version: {self.version}")
         """Device info."""
+        _LOGGER.debug(f"Version: {self.version}")
         return {
             "identifiers": {(DOMAIN, self.verification)},
             "name": "Channels DVR Recordings",
@@ -109,32 +106,18 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
 
     @callback
     async def async_added_to_hass(self):
+        """Called when the entity is added to HA.  Won't be called if the entity is disabled."""
         self.async_schedule_update_ha_state(force_refresh=True)
 
     async def async_update(self):
+        """Called to update the entity state & attributes."""
         import os
         import re
 
-        files_uri = f"http://{self.server_ip}:{self.port}{FILES_ENDPOINT}"
-        _LOGGER.debug(f"Updating")
-
-        """Retrieve recorded show info and server version"""
         try:
-            resp = await request(files_uri)
-            json_string = resp.decode("utf-8")
-            files = json.loads(json_string)
-            if not files:
-                self._state = "%s cannot be reached" % self.server_ip
-                return
-
-        except OSError:
-            _LOGGER.warning("Host %s is not available", self.server_ip)
-            self._state = "%s cannot be reached" % self.server_ip
-            return
-
-        except JSONDecodeError:
-            _LOGGER.warning("Couldn't decode data returned from %s", self.server_ip)
-            self._state = "Couldn't decode data returned from %s" % self.server_ip
+            files = await self._channels_dvr.get_files()
+        except ConnectionFail as err:
+            self._state = err.msg
             return
 
         self._state = "Online"
@@ -203,7 +186,11 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
                 """Update if media items have changed or images are missing"""
                 filename = urlparse(image_uri).path.rsplit("/", 1)[-1]
                 if filename not in dir_images:
-                    poster_image = await request(image_uri)
+                    try:
+                        poster_image = await self._channels_dvr.get_poster(image_uri)
+                    except ConnectionFail as err:
+                        poster_image = None
+
                     if poster_image is not None:
                         image_file = directory + filename
                         open(image_file, "wb").write(poster_image)

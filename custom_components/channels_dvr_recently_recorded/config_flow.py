@@ -1,5 +1,10 @@
 """Config flow for the Channels DVR Recently Recorded."""
-from custom_components.channels_dvr_recently_recorded import DOMAIN, request
+from custom_components.channels_dvr_recently_recorded.api import (
+    ChannelsDVR,
+    ConnectionFail,
+    DEFAULT_PORT,
+)
+from custom_components.channels_dvr_recently_recorded import DOMAIN
 from custom_components.channels_dvr_recently_recorded.sensor import (
     CONF_DL_IMAGES,
     CONF_HOSTNAME,
@@ -7,9 +12,7 @@ from custom_components.channels_dvr_recently_recorded.sensor import (
     CONF_MAX,
     CONF_VERIFICATION,
     DEFAULT_NAME,
-    DEFAULT_PORT,
 )
-import json
 import logging
 from typing import Any, Dict, Optional
 
@@ -42,19 +45,11 @@ STEP_USER_DATA_SCHEMA = STEP_DISCOVERY_DATA_SCHEMA.extend(
 async def validate_input(data):
     """Validate the user input allows us to connect."""
 
-    url = f"http://{data[CONF_HOST]}:{data[CONF_PORT]}/auth"
+    channels_dvr = ChannelsDVR(data[CONF_HOST], data[CONF_PORT])
 
-    """Retrieve recorded show info"""
     try:
-        resp = await request(url)
-        json_string = resp.decode("utf-8")
-        auth = json.loads(json_string)
-    except (OSError, AttributeError):
-        _LOGGER.error("Host %s is not available", data[CONF_HOST])
-        raise CannotConnect
-
-    except Exception:
-        _LOGGER.exception("Unexpected exception")
+        auth = await channels_dvr.get_auth()
+    except ConnectionFail:
         raise CannotConnect
 
     return {CONF_VERIFICATION: auth.get(CONF_VERIFICATION, "None")}
@@ -93,8 +88,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_zeroconf(
         self, discovery_info: Optional[Dict[str, Any]] = None
     ):
-        """Handle the initial step."""
-
         """Handle a flow initialized by zeroconf discovery."""
         _LOGGER.debug(f"Discovered {discovery_info}")
 
