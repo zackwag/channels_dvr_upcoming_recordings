@@ -1,7 +1,7 @@
 # Channels DVR Recently Recorded Component
 
 Home Assistant component to feed [Upcoming Media Card](https://github.com/custom-cards/upcoming-media-card) with
-recently recorded shows.</br>
+recently recorded shows from a [Channels DVR Server](https://getchannels.com/).</br>
 </br></br>
 
 ### Issues
