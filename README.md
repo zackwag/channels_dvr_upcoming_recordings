@@ -4,13 +4,6 @@ Home Assistant component to feed [Upcoming Media Card](https://github.com/custom
 recently recorded shows from a [Channels DVR Server](https://getchannels.com/).</br>
 </br></br>
 
-### Issues
-
-Read through these two resources before posting issues to GitHub or the forums.
-
-- [troubleshooting guide](https://github.com/custom-cards/upcoming-media-card/blob/master/troubleshooting.md)
-- [@thomasloven's lovelace guide](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins).
-
 ## Installation:
 
 ### HACS
