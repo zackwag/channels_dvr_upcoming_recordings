@@ -66,9 +66,10 @@ This integration can only be configuration through the UI (Configuration->Integr
 
 Here's an example of the sensor entity that the integration creates:
 
-![image](https://user-images.githubusercontent.com/860888/115941255-837d3e80-a459-11eb-8c2b-b36f946f187d.png)
+![image](https://user-images.githubusercontent.com/860888/115941463-4bc2c680-a45a-11eb-96eb-2e273a194b60.png)
 
 And here's an example of the Upcoming Media Card displaying the contents on my Lovelace dashboard:
 
-![image](https://user-images.githubusercontent.com/860888/115941317-c17a6280-a459-11eb-9948-10d90905ad73.png)
+![image](https://user-images.githubusercontent.com/860888/115941423-2766ea00-a45a-11eb-88a6-089334ad55a1.png)
+
 
