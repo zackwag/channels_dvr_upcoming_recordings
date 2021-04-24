@@ -61,3 +61,14 @@ This integration can only be configuration through the UI (Configuration->Integr
 | line3 | $number - $rating - $runtime | "S01E12 - ★ 9.8 - 01:30"                            |
 | line4 | $genres                      | "Action, Adventure, Comedy"                         |
 | icon  | mdi:eye-off                  | https://materialdesignicons.com/icon/eye-off        |
+
+### Examples
+
+Here's an example of the sensor entity that the integration creates:
+
+![image](https://user-images.githubusercontent.com/860888/115941255-837d3e80-a459-11eb-8c2b-b36f946f187d.png)
+
+And here's an example of the Upcoming Media Card displaying the contents on my Lovelace dashboard:
+
+![image](https://user-images.githubusercontent.com/860888/115941317-c17a6280-a459-11eb-9948-10d90905ad73.png)
+
