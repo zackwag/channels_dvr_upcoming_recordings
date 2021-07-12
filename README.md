@@ -4,13 +4,6 @@ Home Assistant component to feed [Upcoming Media Card](https://github.com/custom
 recently recorded shows from a [Channels DVR Server](https://getchannels.com/).</br>
 </br></br>
 
-### Issues
-
-Read through these two resources before posting issues to GitHub or the forums.
-
-- [troubleshooting guide](https://github.com/custom-cards/upcoming-media-card/blob/master/troubleshooting.md)
-- [@thomasloven's lovelace guide](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins).
-
 ## Installation:
 
 ### HACS
@@ -68,3 +61,15 @@ This integration can only be configuration through the UI (Configuration->Integr
 | line3 | $number - $rating - $runtime | "S01E12 - ★ 9.8 - 01:30"                            |
 | line4 | $genres                      | "Action, Adventure, Comedy"                         |
 | icon  | mdi:eye-off                  | https://materialdesignicons.com/icon/eye-off        |
+
+### Examples
+
+Here's an example of the sensor entity that the integration creates:
+
+![image](https://user-images.githubusercontent.com/860888/115941463-4bc2c680-a45a-11eb-96eb-2e273a194b60.png)
+
+And here's an example of the Upcoming Media Card displaying the contents on my Lovelace dashboard:
+
+![image](https://user-images.githubusercontent.com/860888/115941423-2766ea00-a45a-11eb-88a6-089334ad55a1.png)
+
+
