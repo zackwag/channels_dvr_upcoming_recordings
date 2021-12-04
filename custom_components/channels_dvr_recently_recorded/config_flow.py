@@ -20,7 +20,6 @@ import voluptuous as vol
 from homeassistant import config_entries, exceptions
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
 from homeassistant.helpers import config_validation as cv
-from homeassistant.components import zeroconf
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,14 +86,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_zeroconf(
-        self, discovery_info: zeroconf.ZeroconfServiceInfo
+        self, discovery_info: Optional[Dict[str, Any]] = None
     ):
         """Handle a flow initialized by zeroconf discovery."""
         _LOGGER.debug(f"Discovered {discovery_info}")
 
-        host: str = discovery_info.host
-        port: int = discovery_info.port
-        hostname: str = discovery_info.hostname
+        host: str = discovery_info[CONF_HOST]
+        port: int = discovery_info[CONF_PORT]
+        hostname: str = discovery_info[CONF_HOSTNAME]
 
         self._discovered = {
             CONF_HOST: host,
