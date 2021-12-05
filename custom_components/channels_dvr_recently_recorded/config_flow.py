@@ -86,14 +86,19 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_zeroconf(
-        self, discovery_info: Optional[Dict[str, Any]] = None
+        self, discovery_info
     ):
         """Handle a flow initialized by zeroconf discovery."""
         _LOGGER.debug(f"Discovered {discovery_info}")
 
-        host: str = discovery_info[CONF_HOST]
-        port: int = discovery_info[CONF_PORT]
-        hostname: str = discovery_info[CONF_HOSTNAME]
+        if isinstance(discovery_info, dict):
+            host: str = discovery_info[CONF_HOST]
+            port: int = discovery_info[CONF_PORT]
+            hostname: str = discovery_info[CONF_HOSTNAME]
+        else:
+            host: str = discovery_info.host
+            port: int = discovery_info.port
+            hostname: str = discovery_info.hostname
 
         self._discovered = {
             CONF_HOST: host,
