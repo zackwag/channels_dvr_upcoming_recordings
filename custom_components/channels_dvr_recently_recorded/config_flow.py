@@ -85,9 +85,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
 
-    async def async_step_zeroconf(
-        self, discovery_info
-    ):
+    async def async_step_zeroconf(self, discovery_info):
         """Handle a flow initialized by zeroconf discovery."""
         _LOGGER.debug(f"Discovered {discovery_info}")
 
