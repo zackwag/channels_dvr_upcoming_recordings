@@ -175,7 +175,7 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
                 RUNTIME: episode["Raw"].get("duration", 0),
                 GENRES: episode.get("Genres", ""),
                 RATING: ""
-                if not episode["Raw"]["ratings"]
+                if "ratings" not in episode["Raw"] or not episode["Raw"]["ratings"]
                 else episode["Raw"]["ratings"][0]["code"],
                 POSTER: episode["Raw"]["program"]["preferredImage"].get("uri", ""),
             }
