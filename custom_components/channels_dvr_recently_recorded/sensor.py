@@ -93,7 +93,7 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
 
     @property
     def device_info(self):
-        """ info."""
+        """ Device info."""
         _LOGGER.debug(f"Version: {self.version}")
         return {
             "identifiers": {(DOMAIN, self.verification)},
