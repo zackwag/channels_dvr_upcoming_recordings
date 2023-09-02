@@ -92,15 +92,14 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
         return self.verification
 
     @property
-    def device_info(self):
-        """Device info."""
+    def _info(self):
+        """ info."""
         _LOGGER.debug(f"Version: {self.version}")
         return {
             "identifiers": {(DOMAIN, self.verification)},
             "name": "Channels DVR Recordings",
             "manufacturer": "Channels",
             "model": "DVR Server",
-            "default_name": "Channels DVR Recordings",
             "entry_type": DeviceEntryType.SERVICE,
             "sw_version": self.version,
         }
