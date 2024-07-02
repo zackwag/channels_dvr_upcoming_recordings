@@ -111,6 +111,7 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
     async def async_update(self):
         """Called to update the entity state & attributes."""
         import aiofiles.os as os
+        import aiofiles
         import re
 
         try:
@@ -193,7 +194,7 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
 
                     if poster_image is not None:
                         image_file = directory + filename
-                        with os.open(image_file, "wb") as file:
+                        async with aiofiles.open(image_file, "wb") as file:
                             await file.write(poster_image)
                 elif filename in remove_images:
                     remove_images.remove(filename)
