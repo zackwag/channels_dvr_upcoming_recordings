@@ -1,4 +1,4 @@
 {
-  "name": "Channels DVR Recently Recorded",
-  "iot_class": "Local Polling"
+    "name": "Channels DVR Upcoming Recordings",
+    "iot_class": "Local Polling"
 }

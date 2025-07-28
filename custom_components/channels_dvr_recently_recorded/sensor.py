@@ -1,20 +1,22 @@
 """
 Home Assistant component to feed the Upcoming Media Lovelace card with
-Channels DVR recently recorded shows.
+Channels DVR upcoming recordings.
 
 https://github.com/custom-cards/upcoming-media-card
 
 """
-from custom_components.channels_dvr_recently_recorded.api import ConnectionFail
-from custom_components.channels_dvr_recently_recorded import DOMAIN
 import logging
-from homeassistant.core import callback
-from homeassistant.const import CONF_NAME
-from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.device_registry import DeviceEntryType
-from dateutil.parser import parse
-from urllib.parse import urlparse
 from datetime import timedelta
+from urllib.parse import urlparse
+
+from custom_components.channels_dvr_upcoming_recordings import DOMAIN
+from custom_components.channels_dvr_upcoming_recordings.api import \
+    ConnectionFail
+from dateutil.parser import parse
+from homeassistant.const import CONF_NAME
+from homeassistant.core import callback
+from homeassistant.helpers.device_registry import DeviceEntryType
+from homeassistant.helpers.entity import Entity
 
 SCAN_INTERVAL = timedelta(seconds=30)
 _LOGGER = logging.getLogger(__name__)
@@ -44,15 +46,15 @@ LINE3_DEFAULT = "line3_default"
 LINE4_DEFAULT = "line4_default"
 ICON = "icon"
 
-DEFAULT_NAME = "Recently Recorded"
+DEFAULT_NAME = "Upcoming Recordings"
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up sensor entity."""
-    async_add_entities([ChannelsDVRRecentlyRecordedSensor(hass, config_entry)])
+    async_add_entities([ChannelsDVRUpcomingRecordingsSensor(hass, config_entry)])
 
 
-class ChannelsDVRRecentlyRecordedSensor(Entity):
+class ChannelsDVRUpcomingRecordingsSensor(Entity):
     def __init__(self, hass, conf):
         self._name = conf.data.get(CONF_NAME)
         self.conf_dir = str(hass.config.path()) + "/"
@@ -96,7 +98,7 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
         _LOGGER.debug(f"Version: {self.version}")
         return {
             "identifiers": {(DOMAIN, self.verification)},
-            "name": "Channels DVR Recordings",
+            "name": "Channels DVR Upcoming Recordings",
             "manufacturer": "Channels",
             "model": "DVR Server",
             "entry_type": DeviceEntryType.SERVICE,
@@ -110,33 +112,20 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
 
     async def async_update(self):
         """Called to update the entity state & attributes."""
-        import aiofiles.os as os
-        import aiofiles
         import re
 
+        import aiofiles
+        import aiofiles.os as os
+
         try:
-            files = await self._channels_dvr.get_files()
+            jobs = await self._channels_dvr.get_upcoming()
         except ConnectionFail as err:
             self._state = err.msg
             return
 
         self._state = "Online"
 
-        """Only look for recorded programs"""
-        recordings = [x for x in files if x.get("JobID", "") != "" and x.get("Deleted", False) == False and "Raw" in x["Airing"]]
-        recordings.sort(
-            reverse=True, key=lambda x: parse(x["Airing"]["Raw"]["startTime"])
-        )
-
-        if self.dl_images:
-            directory = self.conf_dir + "www" + self._dir
-            if not await os.path.exists(directory):
-                await os.makedirs(directory, mode=0o777)
-
-            """Make list of images in dir that use our naming scheme"""
-            dir_re = re.compile(r"p.+\.jpg")
-            dir_images = list(filter(dir_re.search, await os.listdir(directory)))
-            remove_images = dir_images.copy()
+        jobs.sort(key=lambda x: x.get("Time", 0))
 
         self._attrs = []
 
@@ -146,50 +135,62 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
             LINE2_DEFAULT: "$release",
             LINE3_DEFAULT: "$number - $rating - $runtime",
             LINE4_DEFAULT: "$genres",
-            ICON: "mdi:eye",
+            ICON: "mdi:calendar-clock",
         }
 
         self._attrs.append(attr)
 
         num_items = 0
 
-        for recording in recordings:
-            episode = recording["Airing"]
+        for job in jobs:
+            episode = job["Airing"]
 
             num_items += 1
             if num_items > self.max_items:
                 break
 
+            start_time = episode.get("Raw", {}).get("startTime")
+            airdate = ""
+            if start_time:
+                airdate = parse(start_time).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+            rating = ""
+            if "ratings" in episode.get("Raw", {}) and episode["Raw"]["ratings"]:
+                rating = episode["Raw"]["ratings"][0].get("code", "")
+
             attr = {
-                AIRDATE: ""
-                if not episode["Raw"].get("startTime", None)
-                else parse(episode["Raw"]["startTime"]).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                AIRDATE: airdate,
                 AIRED: episode.get("OriginalDate", ""),
-                FLAG: recording.get("Watched", False),
+                FLAG: False,  # No watched info for upcoming
                 TITLE: episode.get("Title", ""),
                 EPISODE: episode.get("EpisodeTitle", ""),
                 RELEASE: "$day, $date $time",
-                NUMBER: "S%02d" % episode.get("SeasonNumber", 0)
-                + "E%02d" % episode.get("EpisodeNumber", 0),
-                RUNTIME: episode["Raw"].get("duration", 0),
-                GENRES: episode.get("Genres", ""),
-                RATING: ""
-                if "ratings" not in episode["Raw"] or not episode["Raw"]["ratings"]
-                else episode["Raw"]["ratings"][0]["code"],
-                POSTER: episode["Raw"]["program"]["preferredImage"].get("uri", ""),
+                NUMBER: f'S{episode.get("SeasonNumber", 0):02d}E{episode.get("EpisodeNumber", 0):02d}',
+                RUNTIME: episode.get("Duration", 0),
+                GENRES: episode.get("Genres", []),
+                RATING: rating,
+                POSTER: episode.get("Image", ""),
             }
 
-            image_uri = episode["Raw"]["program"]["preferredImage"]["uri"]
+            image_uri = episode.get("Image", "")
 
             if not self.dl_images:
                 attr[POSTER] = image_uri
             else:
-                """Update if media items have changed or images are missing"""
+                directory = self.conf_dir + "www" + self._dir
+                if not await os.path.exists(directory):
+                    await os.makedirs(directory, mode=0o777)
+
+                # Make list of images in dir that use our naming scheme
+                dir_re = re.compile(r"p.+\.jpg")
+                dir_images = list(filter(dir_re.search, await os.listdir(directory)))
+                remove_images = dir_images.copy()
+
                 filename = urlparse(image_uri).path.rsplit("/", 1)[-1]
                 if filename not in dir_images:
                     try:
                         poster_image = await self._channels_dvr.get_poster(image_uri)
-                    except ConnectionFail as err:
+                    except ConnectionFail:
                         poster_image = None
 
                     if poster_image is not None:
@@ -203,7 +204,7 @@ class ChannelsDVRRecentlyRecordedSensor(Entity):
             self._attrs.append(attr)
 
         if self.dl_images:
-            """Remove items no longer in the list"""
+            # Remove items no longer in the list
             _LOGGER.debug(f"Removing {remove_images}")
             [await os.remove(directory + x) for x in remove_images]
 

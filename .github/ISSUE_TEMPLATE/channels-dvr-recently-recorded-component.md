@@ -1,5 +1,5 @@
 ---
-name: Channels DVR Recently Recorded Component
+name: Channels DVR Upcoming Recordings Component
 about: Issues with the component
 title: ""
 labels: ""
