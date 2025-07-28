@@ -1,7 +1,7 @@
 {
     "domain": "channels_dvr_upcoming_recordings",
     "name": "Channels DVR Upcoming Recordings",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "documentation": "https://github.com/zackwag/channels_dvr_upcoming_recordings/blob/master/README.md",
     "dependencies": [],
     "config_flow": true,

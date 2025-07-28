@@ -1,22 +1,14 @@
-"""Config flow for the Channels DVR Recently Recorded."""
-from custom_components.channels_dvr_recently_recorded.api import (
-    ChannelsDVR,
-    ConnectionFail,
-    DEFAULT_PORT,
-)
-from custom_components.channels_dvr_recently_recorded import DOMAIN
-from custom_components.channels_dvr_recently_recorded.sensor import (
-    CONF_DL_IMAGES,
-    CONF_HOSTNAME,
-    CONF_IMG_DIR,
-    CONF_MAX,
-    CONF_VERIFICATION,
-    DEFAULT_NAME,
-)
+"""Config flow for the Channels DVR Upcoming Recordings."""
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import voluptuous as vol
+from custom_components.channels_dvr_upcoming_recordings import DOMAIN
+from custom_components.channels_dvr_upcoming_recordings.api import (
+    DEFAULT_PORT, ChannelsDVR, ConnectionFail)
+from custom_components.channels_dvr_upcoming_recordings.sensor import (
+    CONF_DL_IMAGES, CONF_HOSTNAME, CONF_IMG_DIR, CONF_MAX, CONF_VERIFICATION,
+    DEFAULT_NAME)
 from homeassistant import config_entries, exceptions
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PORT
 from homeassistant.helpers import config_validation as cv

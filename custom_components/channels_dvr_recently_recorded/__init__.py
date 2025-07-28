@@ -1,22 +1,20 @@
-"""The Channels DVR Recently Recorded integation."""
+"""The Channels DVR Upcoming Recordings integration."""
 
-from homeassistant.const import CONF_HOST, CONF_PORT
-from custom_components.channels_dvr_recently_recorded.api import (
-    ChannelsDVR,
-    ConnectionFail,
-)
 import logging
+
+from custom_components.channels_dvr_upcoming_recordings.api import (
+    ChannelsDVR, ConnectionFail)
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.core import HomeAssistant
 
-
-DOMAIN = "channels_dvr_recently_recorded"
+DOMAIN = "channels_dvr_upcoming_recordings"
 
 _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup(hass: HomeAssistant, config: dict):
-    """Set up the Channels DVR Recently Recorded component."""
+    """Set up the Channels DVR Upcoming Recordings component."""
     hass.data.setdefault(DOMAIN, {})
     return True
 
@@ -34,7 +32,7 @@ async def async_setup_entry(hass, config_entry):
 
     hass.data[DOMAIN][config_entry.entry_id] = channels_dvr
 
-    await hass.config_entries.async_forward_entry_setups (config_entry, ["sensor"])
+    await hass.config_entries.async_forward_entry_setups(config_entry, ["sensor"])
 
     return True
 
